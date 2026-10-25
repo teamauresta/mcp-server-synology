@@ -222,6 +222,7 @@ temp/
 
 # Local configuration files
 config.local.json
+.codex/config.toml
 .env.local
 .env.production
 
