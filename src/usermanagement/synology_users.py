@@ -251,7 +251,6 @@ class SynologyUserManager:
         self,
         username: str,
         groups: List[str],
-        param_name: str,
         expect_member: bool,
     ) -> Dict[str, Any]:
         """Issue a SYNO.Core.User.Group join and verify it actually landed.
@@ -261,13 +260,20 @@ class SynologyUserManager:
         apply (issue #88). After a queued success, poll the group listings
         and annotate the response with the verification outcome so callers
         can tell "applied" from "queued".
+
+        The parameters are `join_group` and `leave_group` (singular), both
+        sent on every call, as DSM's own user dialog does. DSM accepts the
+        plural `join_groups`/`leave_groups` without error but the membership
+        never changes (seen on DSM 7.4.1), which is how issue #88 presented.
         """
+        join, leave = (groups, []) if expect_member else ([], groups)
         result = self._api_call(
             "SYNO.Core.User.Group",
             "join",
             extra_params={
                 "name": username,
-                param_name: json.dumps(groups),
+                "join_group": json.dumps(join),
+                "leave_group": json.dumps(leave),
             },
             use_post=True,
         )
@@ -300,7 +306,7 @@ class SynologyUserManager:
             groups: List of group names to join.
         """
         return self._apply_group_change(
-            username, groups, param_name="join_groups", expect_member=True
+            username, groups, expect_member=True
         )
 
     def remove_user_from_group(self, username: str, groups: List[str]) -> Dict[str, Any]:
@@ -315,7 +321,7 @@ class SynologyUserManager:
             groups: List of group names to leave.
         """
         return self._apply_group_change(
-            username, groups, param_name="leave_groups", expect_member=False
+            username, groups, expect_member=False
         )
 
     # ------------------------------------------------------------------
