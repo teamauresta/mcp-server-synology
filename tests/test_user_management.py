@@ -79,7 +79,10 @@ def test_add_user_to_group_wire_format_and_verification():
     assert sent.kwargs["data"]["method"] == "join"
     assert sent.kwargs["data"]["_sid"] == "sid_xyz"
     assert sent.kwargs["data"]["name"] == "authelia"
-    assert json.loads(sent.kwargs["data"]["join_groups"]) == ["docker"]
+    # Singular names, both present: DSM silently ignores join_groups/leave_groups.
+    assert json.loads(sent.kwargs["data"]["join_group"]) == ["docker"]
+    assert json.loads(sent.kwargs["data"]["leave_group"]) == []
+    assert "join_groups" not in sent.kwargs["data"]
     assert sent.kwargs["headers"]["X-SYNO-TOKEN"] == "tok_abc"
 
     print("✅ add_user_to_group wire format and verification passed")
@@ -169,7 +172,9 @@ def test_remove_user_from_group_verifies_departure():
 
     assert result["verified"] is True
     assert "warning" not in result
-    assert json.loads(post.call_args.kwargs["data"]["leave_groups"]) == ["docker"]
+    assert json.loads(post.call_args.kwargs["data"]["leave_group"]) == ["docker"]
+    assert json.loads(post.call_args.kwargs["data"]["join_group"]) == []
+    assert "leave_groups" not in post.call_args.kwargs["data"]
 
     print("✅ remove_user_from_group verifies departure")
 

@@ -16,6 +16,13 @@
   rather than retried, since DSM may still apply it. A write DSM confirmed whose read-back then fails is
   still reported as a success, flagged `readback_failed`, so it is not retried into a duplicate.
 
+### Fixed
+- **Adding and removing group members now applies** — `synology_add_user_to_group` and
+  `synology_remove_user_from_group` sent `join_groups`/`leave_groups`, which DSM accepts without error
+  while leaving the membership unchanged; the post-write check added for issue #88 then reported the
+  change as queued but never applied. They now send `join_group` and `leave_group` (singular), both on
+  every call, as DSM's own user dialog does. Checked on a DS423+ (DSM 7.4.1-90080 Update 1).
+
 ## [1.8.0] - 2026-09-29
 
 ### Added
